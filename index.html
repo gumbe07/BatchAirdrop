@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Token Sender - Base Network Airdrop Tool</title>
-    <meta name="description" content="Bulk token sender for Base network. Send ETH and tokens to multiple addresses in batch transactions.">
+    <title>Bulk Token Sender - Base Network</title>
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -15,7 +13,6 @@
             background: linear-gradient(135deg, #0052ff 0%, #1e3a8a 100%);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
         }
         
         .container {
@@ -59,19 +56,24 @@
         .status.warning { background: #fff3cd; color: #856404; border: 2px solid #ffeaa7; }
         .status.hidden { display: none; }
         
-        .card {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 28px;
-            margin: 24px 0;
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
         }
-        
-        .card h3 {
-            color: #1e293b;
-            margin-bottom: 20px;
-            font-size: 20px;
-            font-weight: 700;
+
+        .feature-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
         }
         
         button {
@@ -96,49 +98,11 @@
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none !important;
         }
         
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #000;
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            margin: 10px 0;
-            font-size: 15px;
-            transition: border-color 0.3s ease;
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #0052ff;
-            box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.1);
-        }
-        
-        .form-group {
-            margin-bottom: 24px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 14px;
-        }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
         
         .wallet-info {
             background: linear-gradient(135deg, #ecfdf5, #d1fae5);
@@ -173,6 +137,49 @@
             margin-bottom: 10px;
         }
         
+        .card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 28px;
+            margin: 24px 0;
+        }
+        
+        .card h3 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 15px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #0052ff;
+            box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        
         .summary {
             background: linear-gradient(135deg, #0052ff, #1e3a8a);
             color: white;
@@ -193,7 +200,6 @@
             border-radius: 12px;
             padding: 20px 16px;
             text-align: center;
-            backdrop-filter: blur(10px);
         }
         
         .summary-number {
@@ -290,7 +296,6 @@
         .file-drop:hover {
             border-color: #0052ff;
             background: #eff6ff;
-            transform: translateY(-2px);
         }
         
         .file-drop.dragover {
@@ -314,48 +319,22 @@
         
         .hidden { display: none !important; }
         
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f4f6;
-            border-top: 2px solid #0052ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .feature-item {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .feature-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-
         .footer {
             text-align: center;
             margin-top: 40px;
             padding-top: 30px;
             border-top: 2px solid #e2e8f0;
             color: #6b7280;
+        }
+        
+        .debug-info {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 12px;
+            font-family: monospace;
         }
     </style>
 </head>
@@ -367,6 +346,14 @@
         </div>
         
         <div id="status" class="status hidden"></div>
+        
+        <!-- Debug Info -->
+        <div class="debug-info">
+            <strong>🔧 Debug Info:</strong><br>
+            MetaMask: <span id="metamaskStatus">Checking...</span><br>
+            Network: <span id="networkStatus">Not connected</span><br>
+            Account: <span id="accountStatus">Not connected</span>
+        </div>
         
         <!-- Features -->
         <div class="feature-grid">
@@ -428,13 +415,10 @@
                         <textarea 
                             id="addressList" 
                             rows="6" 
-                            placeholder="0x1234567890123456789012345678901234567890&#10;0xabcdefabcdefabcdefabcdefabcdefabcdefabcd&#10;0x9876543210987654321098765432109876543210"></textarea>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            💡 Enter one Ethereum address per line
-                        </div>
+                            placeholder="0x1234567890123456789012345678901234567890&#10;0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"></textarea>
                     </div>
                     
-                    <button id="loadExampleBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px; margin-bottom: 10px;">
+                    <button id="loadExampleBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px;">
                         📝 Load Example Addresses
                     </button>
                     
@@ -450,28 +434,24 @@
                     <div class="form-group">
                         <label for="amount">💰 Amount per Address (ETH)</label>
                         <input type="number" id="amount" step="0.0001" placeholder="0.001" value="0.001">
-                        <div style="font-size: 12px; color: #666;">Example: 0.001 = send 0.001 ETH to each address</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="gasPrice">⛽ Gas Price (Gwei)</label>
                         <select id="gasPrice">
-                            <option value="1">1 Gwei (Cheap & Slow)</option>
+                            <option value="1">1 Gwei (Cheap)</option>
                             <option value="2" selected>2 Gwei (Normal)</option>
                             <option value="5">5 Gwei (Fast)</option>
-                            <option value="10">10 Gwei (Very Fast)</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label for="batchSize">📦 Batch Size</label>
                         <select id="batchSize">
-                            <option value="1">1 transaction (Safest)</option>
-                            <option value="3" selected>3 transactions (Safe)</option>
-                            <option value="5">5 transactions (Recommended)</option>
-                            <option value="10">10 transactions (Fast)</option>
+                            <option value="1">1 transaction</option>
+                            <option value="3" selected>3 transactions</option>
+                            <option value="5">5 transactions</option>
                         </select>
-                        <div style="font-size: 12px; color: #666;">Number of simultaneous transactions</div>
                     </div>
                 </div>
             </div>
@@ -500,7 +480,7 @@
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-                <button id="startBtn" class="btn-success hidden" style="font-size: 18px; padding: 18px;">
+                <button id="startBtn" class="btn-success hidden" style="font-size: 18px;">
                     🎯 Start Bulk Transfer
                 </button>
                 <button id="stopBtn" class="btn-danger hidden">
@@ -522,13 +502,11 @@
             
             <!-- Transaction Log -->
             <div id="logContainer" class="hidden">
-                <h4 style="margin-bottom: 15px; color: #333;">📋 Transaction Logs</h4>
+                <h4 style="margin-bottom: 15px;">📋 Transaction Logs</h4>
                 <div id="log" class="log"></div>
-                <div style="text-align: center; margin-top: 15px;">
-                    <button id="clearLogBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px;">
-                        🗑️ Clear Logs
-                    </button>
-                </div>
+                <button id="clearLogBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px; margin-top: 10px;">
+                    🗑️ Clear Logs
+                </button>
             </div>
         </div>
         
@@ -538,6 +516,8 @@
     </div>
 
     <script>
+        console.log('Script loading...');
+        
         // Base Sepolia Configuration
         const NETWORK_CONFIG = {
             chainId: '0x14A34', // 84532
@@ -576,8 +556,20 @@
             clearLogBtn: document.getElementById('clearLogBtn')
         };
 
+        // Debug elements
+        const metamaskStatus = document.getElementById('metamaskStatus');
+        const networkStatus = document.getElementById('networkStatus');
+        const accountStatus = document.getElementById('accountStatus');
+
+        // Update debug info
+        function updateDebugInfo() {
+            metamaskStatus.textContent = window.ethereum ? '✅ Found' : '❌ Not found';
+            metamaskStatus.style.color = window.ethereum ? 'green' : 'red';
+        }
+
         // Utility functions
         function showStatus(message, type = 'info') {
+            console.log(`Status: ${message} (${type})`);
             elements.status.textContent = message;
             elements.status.className = `status ${type}`;
             elements.status.classList.remove('hidden');
@@ -604,24 +596,31 @@
             }
         }
 
-        // Connect wallet
-        elements.connectBtn.addEventListener('click', async () => {
+        // Connect wallet function
+        async function connectWallet() {
+            console.log('Connect wallet clicked');
+            
             try {
                 if (!window.ethereum) {
-                    showStatus('❌ MetaMask not found! Please install MetaMask browser extension.', 'error');
+                    console.error('MetaMask not found');
+                    showStatus('❌ MetaMask not found! Please install MetaMask extension.', 'error');
                     return;
                 }
 
+                console.log('MetaMask found, connecting...');
                 showStatus('🔄 Connecting wallet...', 'info');
                 
                 // Add/switch to Base Sepolia
                 try {
+                    console.log('Switching to Base Sepolia...');
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
                         params: [{ chainId: NETWORK_CONFIG.chainId }]
                     });
                 } catch (switchError) {
+                    console.log('Switch error:', switchError);
                     if (switchError.code === 4902) {
+                        console.log('Adding Base Sepolia network...');
                         await window.ethereum.request({
                             method: 'wallet_addEthereumChain',
                             params: [NETWORK_CONFIG]
@@ -632,17 +631,27 @@
                 }
 
                 // Connect account
+                console.log('Requesting accounts...');
                 const accounts = await window.ethereum.request({
                     method: 'eth_requestAccounts'
                 });
+
+                console.log('Accounts:', accounts);
+                
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No accounts returned from MetaMask');
+                }
 
                 userAccount = accounts[0];
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
 
+                console.log('Getting balance...');
                 // Get balance
                 const balance = await provider.getBalance(userAccount);
                 const balanceFormatted = ethers.utils.formatEther(balance);
+
+                console.log('Balance:', balanceFormatted);
 
                 // Update UI
                 elements.walletAddress.textContent = `${userAccount.slice(0, 8)}...${userAccount.slice(-6)}`;
@@ -651,31 +660,35 @@
                 elements.mainContent.classList.remove('hidden');
                 elements.connectBtn.style.display = 'none';
 
+                // Update debug info
+                networkStatus.textContent = '✅ Base Sepolia';
+                networkStatus.style.color = 'green';
+                accountStatus.textContent = `✅ ${userAccount.slice(0, 8)}...`;
+                accountStatus.style.color = 'green';
+
                 showStatus('✅ Wallet connected successfully!', 'success');
                 addLog(`Wallet connected: ${userAccount}`, 'success');
 
             } catch (error) {
                 console.error('Wallet connection error:', error);
-                showStatus('❌ Wallet connection error: ' + error.message, 'error');
+                showStatus('❌ Connection error: ' + error.message, 'error');
                 addLog(`Error: ${error.message}`, 'error');
             }
-        });
+        }
 
         // Load example addresses
-        elements.loadExampleBtn.addEventListener('click', () => {
+        function loadExampleAddresses() {
             const examples = [
                 '0x8ba1f109551bD432803012645Hac136c722C80CC',
                 '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db',
-                '0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB',
-                '0x617F2E2fD72FD9D5503197092aC168c91465E7f2',
-                '0xd03ea8624C8C5987235048901bF6B2B4F1429d81'
+                '0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB'
             ];
             elements.addressList.value = examples.join('\n');
             showStatus('📝 Example addresses loaded', 'success');
-        });
+        }
 
         // Validate addresses
-        elements.validateBtn.addEventListener('click', () => {
+        function validateAddresses() {
             const input = elements.addressList.value.trim();
             if (!input) {
                 showStatus('❌ Please enter address list!', 'error');
@@ -707,7 +720,7 @@
 
             addLog(`Validation: ${valid.length} valid, ${invalid.length} invalid`, 'info');
             updateSummary();
-        });
+        }
 
         function updateSummary() {
             if (addresses.length === 0) {
@@ -734,52 +747,64 @@
             elements.startBtn.classList.remove('hidden');
         }
 
-        // Update summary when settings change
-        ['amount', 'gasPrice', 'batchSize'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updateSummary);
-        });
-
-        // Start transfer
-        elements.startBtn.addEventListener('click', async () => {
-            if (addresses.length === 0) {
-                showStatus('❌ Please validate addresses first!', 'error');
-                return;
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            updateDebugInfo();
+            
+            // Connect button
+            if (elements.connectBtn) {
+                elements.connectBtn.addEventListener('click', connectWallet);
+                console.log('Connect button listener added');
             }
-
-            const amount = parseFloat(document.getElementById('amount').value);
-            if (!amount || amount <= 0) {
-                showStatus('❌ Please enter valid amount!', 'error');
-                return;
+            
+            // Load example button
+            if (elements.loadExampleBtn) {
+                elements.loadExampleBtn.addEventListener('click', loadExampleAddresses);
             }
-
-            const confirmed = confirm(`Are you sure you want to send ${(addresses.length * amount).toFixed(4)} ETH to ${addresses.length} addresses?`);
-            if (!confirmed) return;
-
-            isTransferRunning = true;
-            shouldStop = false;
-            elements.startBtn.classList.add('hidden');
-            elements.stopBtn.classList.remove('hidden');
-
-            await performTransfer();
+            
+            // Validate button
+            if (elements.validateBtn) {
+                elements.validateBtn.addEventListener('click', validateAddresses);
+            }
+            
+            // Update summary when settings change
+            ['amount', 'gasPrice', 'batchSize'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updateSummary);
+                }
+            });
+            
+            // Clear logs button
+            if (elements.clearLogBtn) {
+                elements.clearLogBtn.addEventListener('click', () => {
+                    elements.log.innerHTML = '';
+                    elements.logContainer.classList.add('hidden');
+                });
+            }
         });
 
-        // Stop transfer
-        elements.stopBtn.addEventListener('click', () => {
-            shouldStop = true;
-            elements.stopBtn.disabled = true;
-            showStatus('🛑 Stopping transfer...', 'warning');
+        // Check if everything is loaded
+        window.addEventListener('load', () => {
+            console.log('Window loaded');
+            updateDebugInfo();
+            
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    console.log('Accounts changed:', accounts);
+                    if (accounts.length === 0) {
+                        location.reload();
+                    } else if (accounts[0] !== userAccount) {
+                        location.reload();
+                    }
+                });
+
+                window.ethereum.on('chainChanged', () => {
+                    console.log('Chain changed');
+                    location.reload();
+                });
+            }
         });
 
-        // Perform transfer
-        async function performTransfer() {
-            const amount = document.getElementById('amount').value;
-            const batchSize = parseInt(document.getElementById('batchSize').value);
-            const gasPrice = ethers.utils.parseUnits(document.getElementById('gasPrice').value, 'gwei');
-
-            let completed = 0;
-            let failed = 0;
-
-            addLog(`🚀 Transfer started - ${addresses.length} addresses`, 'success');
-
-            try {
-                for (let i = 0; i < addresses.length;
+        console.log('Script loaded successfully
