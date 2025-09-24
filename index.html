@@ -1,239 +1,244 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Token Sender - Base Network</title>
+    <title>Base Airdrop - Toplu Token Gönder</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #0052ff 0%, #1e3a8a 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
         }
         
-        .header {
+        h1 {
             text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .header h1 {
-            font-size: 36px;
-            background: linear-gradient(135deg, #0052ff, #1e3a8a);
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
         }
         
         .subtitle {
+            text-align: center;
             color: #666;
-            font-size: 18px;
+            margin-bottom: 30px;
         }
         
         .status {
-            padding: 16px;
-            border-radius: 12px;
-            margin: 20px 0;
-            font-weight: 600;
             text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
         }
         
-        .status.success { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
-        .status.error { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
-        .status.info { background: #cce7ff; color: #004085; border: 2px solid #99d3ff; }
-        .status.warning { background: #fff3cd; color: #856404; border: 2px solid #ffeaa7; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .status.hidden { display: none; }
         
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
         }
-
-        .feature-item {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .feature-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
         }
         
         button {
-            background: linear-gradient(135deg, #0052ff, #1e3a8a);
-            color: white;
+            width: 100%;
+            padding: 15px;
             border: none;
-            padding: 16px 24px;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
             margin: 10px 0;
+            transition: all 0.3s ease;
         }
         
-        button:hover:not(:disabled) {
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(0, 82, 255, 0.4);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #333;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
         }
         
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-        }
-        
-        .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
-        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
-        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        
-        .wallet-info {
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-            border: 2px solid #10b981;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .wallet-address {
-            font-family: 'Monaco', 'Consolas', monospace;
-            background: rgba(255,255,255,0.8);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 12px;
-            font-size: 14px;
-            color: #059669;
-            font-weight: 600;
-        }
-        
-        .network-badge {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-        
-        .card {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 28px;
-            margin: 24px 0;
-        }
-        
-        .card h3 {
-            color: #1e293b;
-            margin-bottom: 20px;
-            font-size: 20px;
-            font-weight: 700;
+            transform: none !important;
         }
         
         input, textarea, select {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
+            padding: 12px;
+            border: 2px solid #e9ecef;
             border-radius: 10px;
             margin: 10px 0;
-            font-size: 15px;
+            font-size: 14px;
             transition: border-color 0.3s ease;
         }
         
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #0052ff;
-            box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.1);
+            border-color: #667eea;
         }
         
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #374151;
-            font-size: 14px;
+            color: #333;
+        }
+        
+        .wallet-info {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #e8f5e8, #d4edda);
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .wallet-address {
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #155724;
+            font-size: 13px;
+            margin-top: 8px;
+            background: rgba(255,255,255,0.5);
+            padding: 8px;
+            border-radius: 8px;
+        }
+        
+        .network-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .summary {
-            background: linear-gradient(135deg, #0052ff, #1e3a8a);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            border-radius: 16px;
-            padding: 28px;
-            margin: 30px 0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
         }
         
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
         }
         
         .summary-item {
-            background: rgba(255,255,255,0.15);
-            border-radius: 12px;
-            padding: 20px 16px;
             text-align: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px 10px;
         }
         
         .summary-number {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 8px;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         
         .summary-label {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.9;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-weight: 600;
         }
         
         .progress-container {
-            margin: 30px 0;
+            margin: 25px 0;
         }
         
         .progress-bar {
             width: 100%;
-            height: 28px;
-            background: #e2e8f0;
-            border-radius: 14px;
+            height: 24px;
+            background: #e9ecef;
+            border-radius: 12px;
             overflow: hidden;
             position: relative;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
+            background: linear-gradient(90deg, #28a745, #20c997);
             transition: width 0.3s ease;
-            border-radius: 14px;
+            border-radius: 12px;
+            position: relative;
         }
         
         .progress-text {
@@ -241,137 +246,106 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #374151;
-            font-weight: 700;
-            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+            font-size: 12px;
+            z-index: 1;
         }
         
         .log {
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
             border-radius: 12px;
-            padding: 20px;
-            margin-top: 24px;
+            padding: 15px;
+            margin-top: 20px;
             font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .log-item {
-            padding: 10px 12px;
-            margin: 6px 0;
-            border-radius: 8px;
+            padding: 8px 10px;
+            margin: 4px 0;
+            border-radius: 6px;
             border-left: 4px solid;
+            background: white;
         }
         
         .log-success {
-            background: #ecfdf5;
-            border-left-color: #10b981;
-            color: #065f46;
+            border-left-color: #28a745;
+            background: #d4edda;
+            color: #155724;
         }
         
         .log-error {
-            background: #fef2f2;
-            border-left-color: #ef4444;
-            color: #991b1b;
+            border-left-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
         }
         
         .log-info {
-            background: #eff6ff;
-            border-left-color: #3b82f6;
-            color: #1e40af;
+            border-left-color: #17a2b8;
+            background: #d1ecf1;
+            color: #0c5460;
         }
         
         .file-drop {
-            border: 3px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 40px;
+            border: 3px dashed #ccc;
+            border-radius: 12px;
+            padding: 25px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #f8fafc;
+            background: #f8f9fa;
         }
         
         .file-drop:hover {
-            border-color: #0052ff;
-            background: #eff6ff;
+            border-color: #667eea;
+            background: #f0f4ff;
         }
         
         .file-drop.dragover {
-            border-color: #0052ff;
-            background: #dbeafe;
+            border-color: #667eea;
+            background: #e8f2ff;
             transform: scale(1.02);
+        }
+        
+        .hidden {
+            display: none !important;
         }
         
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            gap: 25px;
         }
         
         @media (max-width: 768px) {
             .grid { grid-template-columns: 1fr; }
-            .container { padding: 24px; margin: 10px; }
+            .container { padding: 20px; margin: 10px; }
             .summary-grid { grid-template-columns: repeat(2, 1fr); }
-            .header h1 { font-size: 28px; }
-        }
-        
-        .hidden { display: none !important; }
-        
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid #e2e8f0;
-            color: #6b7280;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🚀 Bulk Token Sender</h1>
-            <p class="subtitle">Send tokens to multiple addresses - Base Sepolia testnet</p>
-        </div>
+        <h1>🚀 Base Airdrop</h1>
+        <p class="subtitle">Toplu token gönderme - Base Sepolia testnet</p>
         
         <div id="status" class="status hidden"></div>
         
-        <!-- Features -->
-        <div class="feature-grid">
-            <div class="feature-item">
-                <div class="feature-icon">⚡</div>
-                <h4>Fast Processing</h4>
-                <p>Batch transactions save gas</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🔒</div>
-                <h4>Secure</h4>
-                <p>MetaMask secure connection</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">📊</div>
-                <h4>Detailed Reports</h4>
-                <p>Real-time progress tracking</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">💰</div>
-                <h4>Low Cost</h4>
-                <p>Optimized gas usage</p>
-            </div>
-        </div>
-        
         <!-- Wallet Connection -->
         <div id="walletSection">
-            <button id="connectBtn">
-                🔗 Connect MetaMask Wallet
+            <button id="connectBtn" class="btn-primary">
+                🔗 MetaMask Cüzdanı Bağla
             </button>
             
             <div id="walletInfo" class="wallet-info hidden">
-                <div class="network-badge">Base Sepolia Testnet</div>
-                <div style="font-weight: 700; font-size: 16px;">✅ Wallet Connected</div>
+                <div class="network-badge">Base Sepolia</div>
+                <div style="font-weight: bold; color: #155724;">✅ Cüzdan Bağlandı</div>
                 <div id="walletAddress" class="wallet-address"></div>
-                <div id="walletBalance" style="margin-top: 12px; font-weight: 700; font-size: 16px; color: #059669;"></div>
+                <div id="walletBalance" style="margin-top: 10px; font-weight: bold; color: #155724;"></div>
             </div>
         </div>
         
@@ -380,107 +354,104 @@
             <div class="grid">
                 <!-- Address Input -->
                 <div class="card">
-                    <h3>📝 Recipient Addresses</h3>
+                    <h3>📝 Alıcı Adresleri</h3>
                     
                     <div class="form-group">
-                        <label>📁 Upload File (.txt, .csv)</label>
+                        <label>📁 Dosya Yükle (.txt, .csv)</label>
                         <div class="file-drop" id="fileDrop">
-                            <div style="font-size: 32px; margin-bottom: 16px;">📄</div>
-                            <div><strong>Choose file</strong> or drag here</div>
-                            <div style="font-size: 12px; color: #666; margin-top: 8px;">One address per line</div>
+                            <div style="font-size: 24px; margin-bottom: 10px;">📄</div>
+                            <div><strong>Dosya seç</strong> veya buraya sürükle</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 8px;">Her satıra bir adres</div>
                         </div>
                         <input type="file" id="fileInput" accept=".txt,.csv" style="display: none;">
                     </div>
                     
                     <div class="form-group">
-                        <label>✏️ Manual Address Input</label>
+                        <label>✏️ Manuel Adres Girişi</label>
                         <textarea 
                             id="addressList" 
                             rows="6" 
-                            placeholder="0x1234567890123456789012345678901234567890&#10;0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"></textarea>
+                            placeholder="0x1234567890123456789012345678901234567890&#10;0xabcdefabcdefabcdefabcdefabcdefabcdefabcd&#10;0x9876543210987654321098765432109876543210"></textarea>
                         <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            💡 Enter one Ethereum address per line
+                            💡 Her satıra bir Ethereum adresi yazın
                         </div>
                     </div>
                     
-                    <button id="loadExampleBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px; margin-bottom: 10px;">
-                        📝 Load Example Addresses
-                    </button>
-                    
                     <button id="validateBtn" class="btn-warning">
-                        🔍 Validate Addresses
+                        🔍 Adresleri Doğrula ve Hazırla
                     </button>
                 </div>
                 
                 <!-- Settings -->
                 <div class="card">
-                    <h3>⚙️ Transfer Settings</h3>
+                    <h3>⚙️ Gönderim Ayarları</h3>
                     
                     <div class="form-group">
-                        <label for="amount">💰 Amount per Address (ETH)</label>
+                        <label for="amount">💰 Her Adrese Gönderilecek ETH Miktarı</label>
                         <input type="number" id="amount" step="0.0001" placeholder="0.001" value="0.001">
-                        <div style="font-size: 12px; color: #666;">Example: 0.001 = send 0.001 ETH to each address</div>
+                        <div style="font-size: 12px; color: #666;">Örnek: 0.001 = her adrese 0.001 ETH</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="gasPrice">⛽ Gas Price (Gwei)</label>
                         <select id="gasPrice">
-                            <option value="1">1 Gwei (Cheap & Slow)</option>
+                            <option value="1">1 Gwei (Ucuz & Yavaş)</option>
                             <option value="2" selected>2 Gwei (Normal)</option>
-                            <option value="5">5 Gwei (Fast)</option>
-                            <option value="10">10 Gwei (Very Fast)</option>
+                            <option value="5">5 Gwei (Hızlı)</option>
+                            <option value="10">10 Gwei (Çok Hızlı)</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="batchSize">📦 Batch Size</label>
+                        <label for="batchSize">📦 Batch Boyutu</label>
                         <select id="batchSize">
-                            <option value="1">1 transaction (Safest)</option>
-                            <option value="3" selected>3 transactions (Safe)</option>
-                            <option value="5">5 transactions (Recommended)</option>
-                            <option value="10">10 transactions (Fast)</option>
+                            <option value="1">1 işlem (En Güvenli)</option>
+                            <option value="3">3 işlem (Güvenli)</option>
+                            <option value="5" selected>5 işlem (Önerilen)</option>
+                            <option value="10">10 işlem (Hızlı)</option>
                         </select>
-                        <div style="font-size: 12px; color: #666;">Number of simultaneous transactions</div>
+                        <div style="font-size: 12px; color: #666;">Aynı anda kaç işlem yapılacağını belirler</div>
                     </div>
                 </div>
             </div>
             
             <!-- Summary -->
             <div id="summary" class="summary hidden">
-                <h3 style="text-align: center; margin-bottom: 15px;">📊 Transfer Summary</h3>
+                <h3 style="margin-bottom: 15px; text-align: center;">📊 Airdrop Özeti</h3>
                 <div class="summary-grid">
                     <div class="summary-item">
                         <div id="totalAddresses" class="summary-number">0</div>
-                        <div class="summary-label">Addresses</div>
+                        <div class="summary-label">Adres Sayısı</div>
                     </div>
                     <div class="summary-item">
                         <div id="totalAmount" class="summary-number">0</div>
-                        <div class="summary-label">Total ETH</div>
+                        <div class="summary-label">Toplam ETH</div>
                     </div>
                     <div class="summary-item">
                         <div id="estimatedCost" class="summary-number">~0</div>
-                        <div class="summary-label">Est. Cost</div>
+                        <div class="summary-label">Tahmini Maliyet</div>
                     </div>
                     <div class="summary-item">
                         <div id="timeEstimate" class="summary-number">~0</div>
-                        <div class="summary-label">Est. Time</div>
+                        <div class="summary-label">Tahmini Süre</div>
                     </div>
                 </div>
             </div>
             
+            <!-- Action Buttons -->
             <div style="text-align: center; margin: 30px 0;">
                 <button id="startBtn" class="btn-success hidden" style="font-size: 18px; padding: 18px;">
-                    🎯 Start Bulk Transfer
+                    🎯 Airdrop Başlat
                 </button>
                 <button id="stopBtn" class="btn-danger hidden">
-                    ⏹️ Stop Transfer
+                    ⏹️ Airdrop Durdur
                 </button>
             </div>
             
             <!-- Progress -->
             <div id="progressContainer" class="progress-container hidden">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600;">
-                    <span>📈 Progress Status</span>
+                    <span>📈 İlerleme Durumu</span>
                     <span id="progressText">0 / 0</span>
                 </div>
                 <div class="progress-bar">
@@ -491,61 +462,60 @@
             
             <!-- Transaction Log -->
             <div id="logContainer" class="hidden">
-                <h4 style="margin-bottom: 15px; color: #333;">📋 Transaction Logs</h4>
+                <h4 style="margin-bottom: 15px; color: #333;">📋 İşlem Logları</h4>
                 <div id="log" class="log"></div>
                 <div style="text-align: center; margin-top: 15px;">
                     <button id="clearLogBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px;">
-                        🗑️ Clear Logs
+                        🗑️ Logları Temizle
                     </button>
                 </div>
             </div>
         </div>
-        
-        <div class="footer">
-            <p>Built for Base Network • Open Source • Made with ❤️</p>
-        </div>
     </div>
 
     <script>
+        // Base Sepolia Configuration
         const NETWORK_CONFIG = {
-            chainId: '0x14A34',
+            chainId: '0x14A34', // 84532
             chainName: 'Base Sepolia',
             rpcUrls: ['https://sepolia.base.org'],
             nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
             blockExplorerUrls: ['https://sepolia.basescan.org']
         };
 
+        // Global variables
         let provider, signer, userAccount;
         let addresses = [];
-        let isTransferRunning = false;
+        let isAirdropRunning = false;
         let shouldStop = false;
 
-        const elements = {
-            status: document.getElementById('status'),
-            connectBtn: document.getElementById('connectBtn'),
-            walletInfo: document.getElementById('walletInfo'),
-            walletAddress: document.getElementById('walletAddress'),
-            walletBalance: document.getElementById('walletBalance'),
-            mainContent: document.getElementById('mainContent'),
-            addressList: document.getElementById('addressList'),
-            loadExampleBtn: document.getElementById('loadExampleBtn'),
-            validateBtn: document.getElementById('validateBtn'),
-            summary: document.getElementById('summary'),
-            startBtn: document.getElementById('startBtn'),
-            stopBtn: document.getElementById('stopBtn'),
-            progressContainer: document.getElementById('progressContainer'),
-            progressFill: document.getElementById('progressFill'),
-            progressText: document.getElementById('progressText'),
-            progressPercent: document.getElementById('progressPercent'),
-            logContainer: document.getElementById('logContainer'),
-            log: document.getElementById('log'),
-            clearLogBtn: document.getElementById('clearLogBtn')
-        };
+        // DOM elements
+        const connectBtn = document.getElementById('connectBtn');
+        const status = document.getElementById('status');
+        const walletInfo = document.getElementById('walletInfo');
+        const walletAddress = document.getElementById('walletAddress');
+        const walletBalance = document.getElementById('walletBalance');
+        const mainContent = document.getElementById('mainContent');
+        const fileDrop = document.getElementById('fileDrop');
+        const fileInput = document.getElementById('fileInput');
+        const addressList = document.getElementById('addressList');
+        const validateBtn = document.getElementById('validateBtn');
+        const summary = document.getElementById('summary');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const logContainer = document.getElementById('logContainer');
+        const log = document.getElementById('log');
+        const clearLogBtn = document.getElementById('clearLogBtn');
 
+        // Utility functions
         function showStatus(message, type = 'info') {
-            elements.status.textContent = message;
-            elements.status.className = `status ${type}`;
-            elements.status.classList.remove('hidden');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.classList.remove('hidden');
         }
 
         function addLog(message, type = 'info') {
@@ -553,31 +523,33 @@
             const logItem = document.createElement('div');
             logItem.className = `log-item log-${type}`;
             logItem.innerHTML = `<strong>${timestamp}</strong> - ${message}`;
-            elements.log.appendChild(logItem);
-            elements.log.scrollTop = elements.log.scrollHeight;
-            elements.logContainer.classList.remove('hidden');
+            log.appendChild(logItem);
+            log.scrollTop = log.scrollHeight;
+            logContainer.classList.remove('hidden');
         }
 
         function updateProgress(current, total) {
             const percentage = total > 0 ? (current / total) * 100 : 0;
-            elements.progressFill.style.width = percentage + '%';
-            elements.progressText.textContent = `${current}/${total}`;
-            elements.progressPercent.textContent = Math.round(percentage) + '%';
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = `${current} / ${total}`;
+            progressPercent.textContent = Math.round(percentage) + '%';
             
             if (total > 0) {
-                elements.progressContainer.classList.remove('hidden');
+                progressContainer.classList.remove('hidden');
             }
         }
 
-        elements.connectBtn.addEventListener('click', async () => {
+        // Connect wallet
+        connectBtn.addEventListener('click', async () => {
             try {
                 if (!window.ethereum) {
-                    showStatus('❌ MetaMask not found! Please install MetaMask browser extension.', 'error');
+                    showStatus('❌ MetaMask bulunamadı! Lütfen MetaMask browser extension yükleyin.', 'error');
                     return;
                 }
 
-                showStatus('🔄 Connecting wallet...', 'info');
+                showStatus('🔄 Cüzdan bağlanıyor...', 'info');
                 
+                // Add/switch to Base Sepolia
                 try {
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
@@ -594,63 +566,37 @@
                     }
                 }
 
+                // Connect account
                 const accounts = await window.ethereum.request({
                     method: 'eth_requestAccounts'
                 });
 
                 userAccount = accounts[0];
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                signer = provider.getSigner();
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
 
+                // Get balance
                 const balance = await provider.getBalance(userAccount);
-                const balanceFormatted = ethers.utils.formatEther(balance);
+                const balanceFormatted = ethers.formatEther(balance);
 
-                elements.walletAddress.textContent = `${userAccount.slice(0, 8)}...${userAccount.slice(-6)}`;
-                elements.walletBalance.textContent = `💰 ${parseFloat(balanceFormatted).toFixed(4)} ETH`;
-                elements.walletInfo.classList.remove('hidden');
-                elements.mainContent.classList.remove('hidden');
-                elements.connectBtn.style.display = 'none';
+                // Update UI
+                walletAddress.textContent = `${userAccount.slice(0, 8)}...${userAccount.slice(-6)}`;
+                walletBalance.textContent = `💰 ${parseFloat(balanceFormatted).toFixed(4)} ETH`;
+                walletInfo.classList.remove('hidden');
+                mainContent.classList.remove('hidden');
+                connectBtn.style.display = 'none';
 
-                showStatus('✅ Wallet connected successfully!', 'success');
-                addLog(`Wallet connected: ${userAccount}`, 'success');
+                showStatus('✅ Cüzdan başarıyla bağlandı! Base Sepolia testnet aktif.', 'success');
+                addLog(`Cüzdan bağlandı: ${userAccount}`, 'success');
 
             } catch (error) {
-                addLog(`💥 Critical error: ${error.message}`, 'error');
-                showStatus('❌ Error during transfer!', 'error');
+                console.error('Wallet connection error:', error);
+                showStatus('❌ Cüzdan bağlantı hatası: ' + error.message, 'error');
+                addLog(`Cüzdan bağlantı hatası: ${error.message}`, 'error');
             }
+        });
 
-            const totalProcessed = completed + failed;
-            const skipped = addresses.length - totalProcessed;
-
-            addLog(`🏁 Transfer completed!`, 'info');
-            addLog(`✅ Successful: ${completed}`, 'success');
-            addLog(`❌ Failed: ${failed}`, 'error');
-            addLog(`⏭️ Skipped: ${skipped}`, 'info');
-
-            if (completed > 0) {
-                showStatus(`🎉 Transfer completed! ${completed}/${addresses.length} successful`, 'success');
-            } else {
-                showStatus(`❌ No transactions completed`, 'error');
-            }
-
-            isTransferRunning = false;
-            shouldStop = false;
-            elements.startBtn.classList.remove('hidden');
-            elements.stopBtn.classList.add('hidden');
-            elements.stopBtn.disabled = false;
-
-            try {
-                const balance = await provider.getBalance(userAccount);
-                const balanceFormatted = ethers.utils.formatEther(balance);
-                elements.walletBalance.textContent = `💰 ${parseFloat(balanceFormatted).toFixed(4)} ETH`;
-            } catch (error) {
-                console.error('Balance update error:', error);
-            }
-        }
-
-        const fileDrop = document.getElementById('fileDrop');
-        const fileInput = document.getElementById('fileInput');
-
+        // File handling
         fileDrop.addEventListener('click', () => fileInput.click());
         fileDrop.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -675,19 +621,241 @@
             reader.onload = (e) => {
                 const content = e.target.result;
                 const lines = content.split(/[\n,]/).map(addr => addr.trim()).filter(addr => addr);
-                elements.addressList.value = lines.join('\n');
-                showStatus(`📁 ${file.name} uploaded - ${lines.length} lines`, 'success');
-                addLog(`File uploaded: ${file.name}`, 'info');
+                addressList.value = lines.join('\n');
+                showStatus(`📁 ${file.name} dosyası yüklendi - ${lines.length} satır`, 'success');
+                addLog(`Dosya yüklendi: ${file.name} (${lines.length} satır)`, 'info');
             };
             reader.readAsText(file);
         }
 
-        elements.clearLogBtn.addEventListener('click', () => {
-            elements.log.innerHTML = '';
-            elements.logContainer.classList.add('hidden');
-            addLog('Logs cleared', 'info');
+        // Validate addresses
+        validateBtn.addEventListener('click', () => {
+            const input = addressList.value.trim();
+            if (!input) {
+                showStatus('❌ Lütfen adres listesi girin!', 'error');
+                return;
+            }
+
+            const rawAddresses = input.split(/[\n,]/).map(addr => addr.trim()).filter(addr => addr);
+            const valid = [];
+            const invalid = [];
+            const duplicates = new Set();
+
+            rawAddresses.forEach(addr => {
+                if (ethers.isAddress(addr)) {
+                    const normalized = addr.toLowerCase();
+                    if (!duplicates.has(normalized)) {
+                        duplicates.add(normalized);
+                        valid.push(normalized);
+                    }
+                } else {
+                    invalid.push(addr);
+                }
+            });
+
+            addresses = valid;
+
+            if (invalid.length > 0) {
+                showStatus(`⚠️ ${invalid.length} geçersiz adres atlandı. ${valid.length} geçerli adres hazır.`, 'warning');
+                addLog(`${invalid.length} geçersiz adres atlandı`, 'error');
+            } else {
+                showStatus(`✅ ${valid.length} geçerli adres doğrulandı ve hazır!`, 'success');
+            }
+
+            addLog(`Doğrulama tamamlandı: ${valid.length} geçerli, ${invalid.length} geçersiz`, 'info');
+            updateSummary();
         });
 
+        function updateSummary() {
+            if (addresses.length === 0) {
+                summary.classList.add('hidden');
+                startBtn.classList.add('hidden');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const gasPrice = parseFloat(document.getElementById('gasPrice').value) || 1;
+            const batchSize = parseInt(document.getElementById('batchSize').value) || 5;
+
+            const totalAmount = addresses.length * amount;
+            const estimatedGasPerTx = 21000;
+            const totalGas = addresses.length * estimatedGasPerTx;
+            const gasCostETH = (totalGas * gasPrice) / 1e9;
+            const totalCost = totalAmount + gasCostETH;
+
+            // Time estimate (rough)
+            const batches = Math.ceil(addresses.length / batchSize);
+            const timeEstimate = batches * 15; // ~15 seconds per batch
+
+            document.getElementById('totalAddresses').textContent = addresses.length;
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(4) + ' ETH';
+            document.getElementById('estimatedCost').textContent = totalCost.toFixed(4) + ' ETH';
+            document.getElementById('timeEstimate').textContent = `${Math.floor(timeEstimate/60)}m ${timeEstimate%60}s`;
+
+            summary.classList.remove('hidden');
+            startBtn.classList.remove('hidden');
+        }
+
+        // Update summary when settings change
+        ['amount', 'gasPrice', 'batchSize'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateSummary);
+        });
+
+        // Start airdrop
+        startBtn.addEventListener('click', async () => {
+            if (addresses.length === 0) {
+                showStatus('❌ Önce adresleri doğrulayın!', 'error');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('amount').value);
+            if (!amount || amount <= 0) {
+                showStatus('❌ Geçerli bir miktar girin!', 'error');
+                return;
+            }
+
+            // Balance check
+            try {
+                const balance = await provider.getBalance(userAccount);
+                const totalNeeded = ethers.parseEther((addresses.length * amount * 1.1).toString()); // +10% for gas
+                
+                if (balance < totalNeeded) {
+                    showStatus(`❌ Yetersiz bakiye! Gerekli: ~${ethers.formatEther(totalNeeded)} ETH`, 'error');
+                    return;
+                }
+            } catch (error) {
+                showStatus('❌ Bakiye kontrolü başarısız: ' + error.message, 'error');
+                return;
+            }
+
+            const confirmed = confirm(
+                `🚀 Airdrop Onayı\n\n` +
+                `📊 ${addresses.length} adrese toplam ${(addresses.length * amount).toFixed(4)} ETH gönderilecek\n` +
+                `💰 Tahmini maliyet: ~${document.getElementById('estimatedCost').textContent}\n` +
+                `⏱️ Tahmini süre: ${document.getElementById('timeEstimate').textContent}\n\n` +
+                `Devam etmek istediğinizden emin misiniz?`
+            );
+
+            if (!confirmed) return;
+
+            isAirdropRunning = true;
+            shouldStop = false;
+            startBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+
+            await performAirdrop();
+        });
+
+        // Stop airdrop
+        stopBtn.addEventListener('click', () => {
+            shouldStop = true;
+            stopBtn.disabled = true;
+            showStatus('🛑 Airdrop durduruluyor... Mevcut işlemler tamamlanacak.', 'warning');
+            addLog('Kullanıcı airdrop durdurmayı istedi', 'info');
+        });
+
+        // Perform airdrop
+        async function performAirdrop() {
+            const amount = document.getElementById('amount').value;
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            const gasPrice = ethers.parseUnits(document.getElementById('gasPrice').value, 'gwei');
+
+            let completed = 0;
+            let failed = 0;
+            const startTime = Date.now();
+
+            addLog(`🚀 Airdrop başlatıldı - ${addresses.length} adrese ${amount} ETH gönderilecek`, 'success');
+            showStatus('🚀 Airdrop çalışıyor...', 'info');
+
+            try {
+                for (let i = 0; i < addresses.length; i += batchSize) {
+                    if (shouldStop) {
+                        addLog('🛑 Airdrop kullanıcı tarafından durduruldu', 'info');
+                        break;
+                    }
+
+                    const batch = addresses.slice(i, i + batchSize);
+                    addLog(`📦 Batch ${Math.floor(i/batchSize) + 1}: ${batch.length} işlem başlatılıyor...`, 'info');
+
+                    const promises = batch.map(async (address, index) => {
+                        try {
+                            const tx = await signer.sendTransaction({
+                                to: address,
+                                value: ethers.parseEther(amount.toString()),
+                                gasPrice: gasPrice,
+                                gasLimit: 21000
+                            });
+
+                            addLog(`✅ ${address}: TX ${tx.hash.slice(0, 10)}...`, 'success');
+                            await tx.wait();
+                            completed++;
+                            updateProgress(completed + failed, addresses.length);
+                            return { success: true, address, tx: tx.hash };
+
+                        } catch (error) {
+                            failed++;
+                            addLog(`❌ ${address}: ${error.message.slice(0, 50)}...`, 'error');
+                            updateProgress(completed + failed, addresses.length);
+                            return { success: false, address, error: error.message };
+                        }
+                    });
+
+                    await Promise.all(promises);
+
+                    // Wait between batches (except for last batch)
+                    if (i + batchSize < addresses.length && !shouldStop) {
+                        addLog('⏳ Batch arası bekleniyor (2 saniye)...', 'info');
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+
+            } catch (error) {
+                addLog(`💥 Kritik hata: ${error.message}`, 'error');
+                showStatus('❌ Airdrop sırasında kritik hata oluştu!', 'error');
+            }
+
+            // Final results
+            const duration = Math.floor((Date.now() - startTime) / 1000);
+            const totalProcessed = completed + failed;
+            const skipped = addresses.length - totalProcessed;
+
+            addLog(`🏁 Airdrop tamamlandı!`, 'info');
+            addLog(`✅ Başarılı: ${completed}`, 'success');
+            addLog(`❌ Başarısız: ${failed}`, 'error');
+            addLog(`⏭️ Atlandı: ${skipped}`, 'info');
+            addLog(`⏱️ Süre: ${Math.floor(duration/60)}m ${duration%60}s`, 'info');
+
+            if (completed > 0) {
+                showStatus(`🎉 Airdrop tamamlandı! ${completed}/${addresses.length} başarılı (${duration}s)`, 'success');
+            } else {
+                showStatus(`❌ Airdrop başarısız! Hiç işlem tamamlanamadı.`, 'error');
+            }
+
+            // Reset UI
+            isAirdropRunning = false;
+            shouldStop = false;
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+            stopBtn.disabled = false;
+
+            // Update wallet balance
+            try {
+                const balance = await provider.getBalance(userAccount);
+                const balanceFormatted = ethers.formatEther(balance);
+                walletBalance.textContent = `💰 ${parseFloat(balanceFormatted).toFixed(4)} ETH`;
+            } catch (error) {
+                console.error('Balance update error:', error);
+            }
+        }
+
+        // Clear log
+        clearLogBtn.addEventListener('click', () => {
+            log.innerHTML = '';
+            logContainer.classList.add('hidden');
+            addLog('Loglar temizlendi', 'info');
+        });
+
+        // Network change handlers
         window.addEventListener('load', () => {
             if (window.ethereum) {
                 window.ethereum.on('accountsChanged', (accounts) => {
@@ -703,163 +871,34 @@
                 });
             }
         });
-    </script>
-</body>
-</html> {
-                console.error('Wallet connection error:', error);
-                showStatus('❌ Wallet connection error: ' + error.message, 'error');
-                addLog(`Error: ${error.message}`, 'error');
-            }
-        });
 
-        elements.loadExampleBtn.addEventListener('click', () => {
+        // Add some example addresses for testing
+        function loadExampleAddresses() {
             const examples = [
                 '0x8ba1f109551bD432803012645Hac136c722C80CC',
-                '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db',
+                '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db', 
                 '0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB',
                 '0x617F2E2fD72FD9D5503197092aC168c91465E7f2',
                 '0xd03ea8624C8C5987235048901bF6B2B4F1429d81'
             ];
-            elements.addressList.value = examples.join('\n');
-            showStatus('📝 Example addresses loaded', 'success');
-        });
-
-        elements.validateBtn.addEventListener('click', () => {
-            const input = elements.addressList.value.trim();
-            if (!input) {
-                showStatus('❌ Please enter address list!', 'error');
-                return;
-            }
-
-            const rawAddresses = input.split(/[\n,]/).map(addr => addr.trim()).filter(addr => addr);
-            const valid = [];
-            const invalid = [];
-
-            rawAddresses.forEach(addr => {
-                if (ethers.utils.isAddress(addr)) {
-                    const normalized = addr.toLowerCase();
-                    if (!valid.includes(normalized)) {
-                        valid.push(normalized);
-                    }
-                } else {
-                    invalid.push(addr);
-                }
-            });
-
-            addresses = valid;
-
-            if (invalid.length > 0) {
-                showStatus(`⚠️ ${invalid.length} invalid, ${valid.length} valid addresses`, 'warning');
-            } else {
-                showStatus(`✅ ${valid.length} valid addresses ready!`, 'success');
-            }
-
-            addLog(`Validation: ${valid.length} valid, ${invalid.length} invalid`, 'info');
-            updateSummary();
-        });
-
-        function updateSummary() {
-            if (addresses.length === 0) {
-                elements.summary.classList.add('hidden');
-                elements.startBtn.classList.add('hidden');
-                return;
-            }
-
-            const amount = parseFloat(document.getElementById('amount').value) || 0;
-            const gasPrice = parseFloat(document.getElementById('gasPrice').value) || 1;
-            const batchSize = parseInt(document.getElementById('batchSize').value) || 3;
-
-            const totalAmount = addresses.length * amount;
-            const gasCostETH = (addresses.length * 21000 * gasPrice) / 1e9;
-            const totalCost = totalAmount + gasCostETH;
-            const timeEstimate = Math.ceil(addresses.length / batchSize) * 15;
-
-            document.getElementById('totalAddresses').textContent = addresses.length;
-            document.getElementById('totalAmount').textContent = totalAmount.toFixed(4);
-            document.getElementById('estimatedCost').textContent = totalCost.toFixed(4);
-            document.getElementById('timeEstimate').textContent = `${Math.floor(timeEstimate/60)}m${timeEstimate%60}s`;
-
-            elements.summary.classList.remove('hidden');
-            elements.startBtn.classList.remove('hidden');
+            addressList.value = examples.join('\n');
+            showStatus('📝 Örnek adresler yüklendi - Test için kullanabilirsiniz', 'info');
         }
 
-        ['amount', 'gasPrice', 'batchSize'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updateSummary);
-        });
-
-        elements.startBtn.addEventListener('click', async () => {
-            if (addresses.length === 0) {
-                showStatus('❌ Please validate addresses first!', 'error');
-                return;
+        // Add example button
+        setTimeout(() => {
+            if (addressList.value.trim() === '') {
+                const exampleBtn = document.createElement('button');
+                exampleBtn.textContent = '📝 Örnek Adresleri Yükle';
+                exampleBtn.className = 'btn-primary';
+                exampleBtn.style.width = 'auto';
+                exampleBtn.style.padding = '8px 16px';
+                exampleBtn.style.fontSize = '14px';
+                exampleBtn.style.marginTop = '10px';
+                exampleBtn.onclick = loadExampleAddresses;
+                addressList.parentNode.appendChild(exampleBtn);
             }
-
-            const amount = parseFloat(document.getElementById('amount').value);
-            if (!amount || amount <= 0) {
-                showStatus('❌ Please enter valid amount!', 'error');
-                return;
-            }
-
-            const confirmed = confirm(`Are you sure you want to send ${(addresses.length * amount).toFixed(4)} ETH to ${addresses.length} addresses?`);
-            if (!confirmed) return;
-
-            isTransferRunning = true;
-            shouldStop = false;
-            elements.startBtn.classList.add('hidden');
-            elements.stopBtn.classList.remove('hidden');
-
-            await performTransfer();
-        });
-
-        elements.stopBtn.addEventListener('click', () => {
-            shouldStop = true;
-            elements.stopBtn.disabled = true;
-            showStatus('🛑 Stopping transfer...', 'warning');
-        });
-
-        async function performTransfer() {
-            const amount = document.getElementById('amount').value;
-            const batchSize = parseInt(document.getElementById('batchSize').value);
-            const gasPrice = ethers.utils.parseUnits(document.getElementById('gasPrice').value, 'gwei');
-
-            let completed = 0;
-            let failed = 0;
-
-            addLog(`🚀 Transfer started - ${addresses.length} addresses`, 'success');
-
-            try {
-                for (let i = 0; i < addresses.length; i += batchSize) {
-                    if (shouldStop) break;
-
-                    const batch = addresses.slice(i, i + batchSize);
-                    addLog(`📦 Processing batch ${Math.floor(i/batchSize) + 1}: ${batch.length} transactions...`, 'info');
-
-                    const promises = batch.map(async (address) => {
-                        try {
-                            const tx = await signer.sendTransaction({
-                                to: address,
-                                value: ethers.utils.parseEther(amount.toString()),
-                                gasPrice: gasPrice,
-                                gasLimit: 21000
-                            });
-
-                            addLog(`✅ ${address}: ${tx.hash.slice(0, 10)}...`, 'success');
-                            await tx.wait();
-                            completed++;
-                            updateProgress(completed + failed, addresses.length);
-
-                        } catch (error) {
-                            failed++;
-                            addLog(`❌ ${address}: ${error.message.slice(0, 30)}...`, 'error');
-                            updateProgress(completed + failed, addresses.length);
-                        }
-                    });
-
-                    await Promise.all(promises);
-
-                    if (i + batchSize < addresses.length && !shouldStop) {
-                        addLog('⏳ Waiting between batches (2 seconds)...', 'info');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                    }
-                }
-
-            } catch (error)
+        }, 1000);
+    </script>
+</body>
+</html>
