@@ -783,7 +783,7 @@
 
             try {
                 const balance = await provider.getBalance(userAccount);
-                const totalNeeded = ethers.parseEther((addresses.length * amount * 1.1).toString());
+                const totalNeeded = ethers.parseEther(((addresses.length * amount * 1.1).toFixed(4)));
                 
                 if (balance < totalNeeded) {
                     showStatus(`Insufficient balance! Required: ~${ethers.formatEther(totalNeeded)} ETH`, 'error');
