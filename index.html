@@ -326,16 +326,6 @@
             border-top: 2px solid #e2e8f0;
             color: #6b7280;
         }
-        
-        .debug-info {
-            background: #f3f4f6;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-            font-size: 12px;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -346,14 +336,6 @@
         </div>
         
         <div id="status" class="status hidden"></div>
-        
-        <!-- Debug Info -->
-        <div class="debug-info">
-            <strong>🔧 Debug Info:</strong><br>
-            MetaMask: <span id="metamaskStatus">Checking...</span><br>
-            Network: <span id="networkStatus">Not connected</span><br>
-            Account: <span id="accountStatus">Not connected</span>
-        </div>
         
         <!-- Features -->
         <div class="feature-grid">
@@ -416,9 +398,12 @@
                             id="addressList" 
                             rows="6" 
                             placeholder="0x1234567890123456789012345678901234567890&#10;0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"></textarea>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                            💡 Enter one Ethereum address per line
+                        </div>
                     </div>
                     
-                    <button id="loadExampleBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px;">
+                    <button id="loadExampleBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px; margin-bottom: 10px;">
                         📝 Load Example Addresses
                     </button>
                     
@@ -434,24 +419,28 @@
                     <div class="form-group">
                         <label for="amount">💰 Amount per Address (ETH)</label>
                         <input type="number" id="amount" step="0.0001" placeholder="0.001" value="0.001">
+                        <div style="font-size: 12px; color: #666;">Example: 0.001 = send 0.001 ETH to each address</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="gasPrice">⛽ Gas Price (Gwei)</label>
                         <select id="gasPrice">
-                            <option value="1">1 Gwei (Cheap)</option>
+                            <option value="1">1 Gwei (Cheap & Slow)</option>
                             <option value="2" selected>2 Gwei (Normal)</option>
                             <option value="5">5 Gwei (Fast)</option>
+                            <option value="10">10 Gwei (Very Fast)</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label for="batchSize">📦 Batch Size</label>
                         <select id="batchSize">
-                            <option value="1">1 transaction</option>
-                            <option value="3" selected>3 transactions</option>
-                            <option value="5">5 transactions</option>
+                            <option value="1">1 transaction (Safest)</option>
+                            <option value="3" selected>3 transactions (Safe)</option>
+                            <option value="5">5 transactions (Recommended)</option>
+                            <option value="10">10 transactions (Fast)</option>
                         </select>
+                        <div style="font-size: 12px; color: #666;">Number of simultaneous transactions</div>
                     </div>
                 </div>
             </div>
@@ -480,7 +469,7 @@
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-                <button id="startBtn" class="btn-success hidden" style="font-size: 18px;">
+                <button id="startBtn" class="btn-success hidden" style="font-size: 18px; padding: 18px;">
                     🎯 Start Bulk Transfer
                 </button>
                 <button id="stopBtn" class="btn-danger hidden">
@@ -502,11 +491,13 @@
             
             <!-- Transaction Log -->
             <div id="logContainer" class="hidden">
-                <h4 style="margin-bottom: 15px;">📋 Transaction Logs</h4>
+                <h4 style="margin-bottom: 15px; color: #333;">📋 Transaction Logs</h4>
                 <div id="log" class="log"></div>
-                <button id="clearLogBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px; margin-top: 10px;">
-                    🗑️ Clear Logs
-                </button>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button id="clearLogBtn" class="btn-warning" style="width: auto; padding: 8px 16px; font-size: 14px;">
+                        🗑️ Clear Logs
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -516,24 +507,19 @@
     </div>
 
     <script>
-        console.log('Script loading...');
-        
-        // Base Sepolia Configuration
         const NETWORK_CONFIG = {
-            chainId: '0x14A34', // 84532
+            chainId: '0x14A34',
             chainName: 'Base Sepolia',
             rpcUrls: ['https://sepolia.base.org'],
             nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
             blockExplorerUrls: ['https://sepolia.basescan.org']
         };
 
-        // Global variables
         let provider, signer, userAccount;
         let addresses = [];
         let isTransferRunning = false;
         let shouldStop = false;
 
-        // DOM elements
         const elements = {
             status: document.getElementById('status'),
             connectBtn: document.getElementById('connectBtn'),
@@ -556,20 +542,7 @@
             clearLogBtn: document.getElementById('clearLogBtn')
         };
 
-        // Debug elements
-        const metamaskStatus = document.getElementById('metamaskStatus');
-        const networkStatus = document.getElementById('networkStatus');
-        const accountStatus = document.getElementById('accountStatus');
-
-        // Update debug info
-        function updateDebugInfo() {
-            metamaskStatus.textContent = window.ethereum ? '✅ Found' : '❌ Not found';
-            metamaskStatus.style.color = window.ethereum ? 'green' : 'red';
-        }
-
-        // Utility functions
         function showStatus(message, type = 'info') {
-            console.log(`Status: ${message} (${type})`);
             elements.status.textContent = message;
             elements.status.className = `status ${type}`;
             elements.status.classList.remove('hidden');
@@ -596,31 +569,22 @@
             }
         }
 
-        // Connect wallet function
-        async function connectWallet() {
-            console.log('Connect wallet clicked');
-            
+        elements.connectBtn.addEventListener('click', async () => {
             try {
                 if (!window.ethereum) {
-                    console.error('MetaMask not found');
-                    showStatus('❌ MetaMask not found! Please install MetaMask extension.', 'error');
+                    showStatus('❌ MetaMask not found! Please install MetaMask browser extension.', 'error');
                     return;
                 }
 
-                console.log('MetaMask found, connecting...');
                 showStatus('🔄 Connecting wallet...', 'info');
                 
-                // Add/switch to Base Sepolia
                 try {
-                    console.log('Switching to Base Sepolia...');
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
                         params: [{ chainId: NETWORK_CONFIG.chainId }]
                     });
                 } catch (switchError) {
-                    console.log('Switch error:', switchError);
                     if (switchError.code === 4902) {
-                        console.log('Adding Base Sepolia network...');
                         await window.ethereum.request({
                             method: 'wallet_addEthereumChain',
                             params: [NETWORK_CONFIG]
@@ -630,65 +594,137 @@
                     }
                 }
 
-                // Connect account
-                console.log('Requesting accounts...');
                 const accounts = await window.ethereum.request({
                     method: 'eth_requestAccounts'
                 });
-
-                console.log('Accounts:', accounts);
-                
-                if (!accounts || accounts.length === 0) {
-                    throw new Error('No accounts returned from MetaMask');
-                }
 
                 userAccount = accounts[0];
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
 
-                console.log('Getting balance...');
-                // Get balance
                 const balance = await provider.getBalance(userAccount);
                 const balanceFormatted = ethers.utils.formatEther(balance);
 
-                console.log('Balance:', balanceFormatted);
-
-                // Update UI
                 elements.walletAddress.textContent = `${userAccount.slice(0, 8)}...${userAccount.slice(-6)}`;
                 elements.walletBalance.textContent = `💰 ${parseFloat(balanceFormatted).toFixed(4)} ETH`;
                 elements.walletInfo.classList.remove('hidden');
                 elements.mainContent.classList.remove('hidden');
                 elements.connectBtn.style.display = 'none';
 
-                // Update debug info
-                networkStatus.textContent = '✅ Base Sepolia';
-                networkStatus.style.color = 'green';
-                accountStatus.textContent = `✅ ${userAccount.slice(0, 8)}...`;
-                accountStatus.style.color = 'green';
-
                 showStatus('✅ Wallet connected successfully!', 'success');
                 addLog(`Wallet connected: ${userAccount}`, 'success');
 
             } catch (error) {
-                console.error('Wallet connection error:', error);
-                showStatus('❌ Connection error: ' + error.message, 'error');
-                addLog(`Error: ${error.message}`, 'error');
+                addLog(`💥 Critical error: ${error.message}`, 'error');
+                showStatus('❌ Error during transfer!', 'error');
+            }
+
+            const totalProcessed = completed + failed;
+            const skipped = addresses.length - totalProcessed;
+
+            addLog(`🏁 Transfer completed!`, 'info');
+            addLog(`✅ Successful: ${completed}`, 'success');
+            addLog(`❌ Failed: ${failed}`, 'error');
+            addLog(`⏭️ Skipped: ${skipped}`, 'info');
+
+            if (completed > 0) {
+                showStatus(`🎉 Transfer completed! ${completed}/${addresses.length} successful`, 'success');
+            } else {
+                showStatus(`❌ No transactions completed`, 'error');
+            }
+
+            isTransferRunning = false;
+            shouldStop = false;
+            elements.startBtn.classList.remove('hidden');
+            elements.stopBtn.classList.add('hidden');
+            elements.stopBtn.disabled = false;
+
+            try {
+                const balance = await provider.getBalance(userAccount);
+                const balanceFormatted = ethers.utils.formatEther(balance);
+                elements.walletBalance.textContent = `💰 ${parseFloat(balanceFormatted).toFixed(4)} ETH`;
+            } catch (error) {
+                console.error('Balance update error:', error);
             }
         }
 
-        // Load example addresses
-        function loadExampleAddresses() {
+        const fileDrop = document.getElementById('fileDrop');
+        const fileInput = document.getElementById('fileInput');
+
+        fileDrop.addEventListener('click', () => fileInput.click());
+        fileDrop.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDrop.classList.add('dragover');
+        });
+        fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
+        fileDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDrop.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                const lines = content.split(/[\n,]/).map(addr => addr.trim()).filter(addr => addr);
+                elements.addressList.value = lines.join('\n');
+                showStatus(`📁 ${file.name} uploaded - ${lines.length} lines`, 'success');
+                addLog(`File uploaded: ${file.name}`, 'info');
+            };
+            reader.readAsText(file);
+        }
+
+        elements.clearLogBtn.addEventListener('click', () => {
+            elements.log.innerHTML = '';
+            elements.logContainer.classList.add('hidden');
+            addLog('Logs cleared', 'info');
+        });
+
+        window.addEventListener('load', () => {
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    if (accounts.length === 0) {
+                        location.reload();
+                    } else if (accounts[0] !== userAccount) {
+                        location.reload();
+                    }
+                });
+
+                window.ethereum.on('chainChanged', () => {
+                    location.reload();
+                });
+            }
+        });
+    </script>
+</body>
+</html> {
+                console.error('Wallet connection error:', error);
+                showStatus('❌ Wallet connection error: ' + error.message, 'error');
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        elements.loadExampleBtn.addEventListener('click', () => {
             const examples = [
                 '0x8ba1f109551bD432803012645Hac136c722C80CC',
                 '0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db',
-                '0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB'
+                '0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB',
+                '0x617F2E2fD72FD9D5503197092aC168c91465E7f2',
+                '0xd03ea8624C8C5987235048901bF6B2B4F1429d81'
             ];
             elements.addressList.value = examples.join('\n');
             showStatus('📝 Example addresses loaded', 'success');
-        }
+        });
 
-        // Validate addresses
-        function validateAddresses() {
+        elements.validateBtn.addEventListener('click', () => {
             const input = elements.addressList.value.trim();
             if (!input) {
                 showStatus('❌ Please enter address list!', 'error');
@@ -720,7 +756,7 @@
 
             addLog(`Validation: ${valid.length} valid, ${invalid.length} invalid`, 'info');
             updateSummary();
-        }
+        });
 
         function updateSummary() {
             if (addresses.length === 0) {
@@ -747,64 +783,83 @@
             elements.startBtn.classList.remove('hidden');
         }
 
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded');
-            updateDebugInfo();
-            
-            // Connect button
-            if (elements.connectBtn) {
-                elements.connectBtn.addEventListener('click', connectWallet);
-                console.log('Connect button listener added');
-            }
-            
-            // Load example button
-            if (elements.loadExampleBtn) {
-                elements.loadExampleBtn.addEventListener('click', loadExampleAddresses);
-            }
-            
-            // Validate button
-            if (elements.validateBtn) {
-                elements.validateBtn.addEventListener('click', validateAddresses);
-            }
-            
-            // Update summary when settings change
-            ['amount', 'gasPrice', 'batchSize'].forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.addEventListener('input', updateSummary);
-                }
-            });
-            
-            // Clear logs button
-            if (elements.clearLogBtn) {
-                elements.clearLogBtn.addEventListener('click', () => {
-                    elements.log.innerHTML = '';
-                    elements.logContainer.classList.add('hidden');
-                });
-            }
+        ['amount', 'gasPrice', 'batchSize'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateSummary);
         });
 
-        // Check if everything is loaded
-        window.addEventListener('load', () => {
-            console.log('Window loaded');
-            updateDebugInfo();
-            
-            if (window.ethereum) {
-                window.ethereum.on('accountsChanged', (accounts) => {
-                    console.log('Accounts changed:', accounts);
-                    if (accounts.length === 0) {
-                        location.reload();
-                    } else if (accounts[0] !== userAccount) {
-                        location.reload();
+        elements.startBtn.addEventListener('click', async () => {
+            if (addresses.length === 0) {
+                showStatus('❌ Please validate addresses first!', 'error');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('amount').value);
+            if (!amount || amount <= 0) {
+                showStatus('❌ Please enter valid amount!', 'error');
+                return;
+            }
+
+            const confirmed = confirm(`Are you sure you want to send ${(addresses.length * amount).toFixed(4)} ETH to ${addresses.length} addresses?`);
+            if (!confirmed) return;
+
+            isTransferRunning = true;
+            shouldStop = false;
+            elements.startBtn.classList.add('hidden');
+            elements.stopBtn.classList.remove('hidden');
+
+            await performTransfer();
+        });
+
+        elements.stopBtn.addEventListener('click', () => {
+            shouldStop = true;
+            elements.stopBtn.disabled = true;
+            showStatus('🛑 Stopping transfer...', 'warning');
+        });
+
+        async function performTransfer() {
+            const amount = document.getElementById('amount').value;
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            const gasPrice = ethers.utils.parseUnits(document.getElementById('gasPrice').value, 'gwei');
+
+            let completed = 0;
+            let failed = 0;
+
+            addLog(`🚀 Transfer started - ${addresses.length} addresses`, 'success');
+
+            try {
+                for (let i = 0; i < addresses.length; i += batchSize) {
+                    if (shouldStop) break;
+
+                    const batch = addresses.slice(i, i + batchSize);
+                    addLog(`📦 Processing batch ${Math.floor(i/batchSize) + 1}: ${batch.length} transactions...`, 'info');
+
+                    const promises = batch.map(async (address) => {
+                        try {
+                            const tx = await signer.sendTransaction({
+                                to: address,
+                                value: ethers.utils.parseEther(amount.toString()),
+                                gasPrice: gasPrice,
+                                gasLimit: 21000
+                            });
+
+                            addLog(`✅ ${address}: ${tx.hash.slice(0, 10)}...`, 'success');
+                            await tx.wait();
+                            completed++;
+                            updateProgress(completed + failed, addresses.length);
+
+                        } catch (error) {
+                            failed++;
+                            addLog(`❌ ${address}: ${error.message.slice(0, 30)}...`, 'error');
+                            updateProgress(completed + failed, addresses.length);
+                        }
+                    });
+
+                    await Promise.all(promises);
+
+                    if (i + batchSize < addresses.length && !shouldStop) {
+                        addLog('⏳ Waiting between batches (2 seconds)...', 'info');
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                     }
-                });
+                }
 
-                window.ethereum.on('chainChanged', () => {
-                    console.log('Chain changed');
-                    location.reload();
-                });
-            }
-        });
-
-        console.log('Script loaded successfully
+            } catch (error)
